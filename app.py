@@ -383,8 +383,9 @@ def create_demo():
         gr.Markdown("# 🎬 VidRush AI Video Engine", elem_classes="main-title")
         gr.Markdown("**Autonomous AI video production** - Enter a prompt, and AI selects clips, generates voiceover, and produces synchronized video.")
         
-        with gr.Accordion("🔑 API Configuration (Optional)", open=False):
-            gr.Markdown("*Enter your API keys to enable AI features. Without keys, a demo mode runs.*")
+        with gr.Accordion("🔑 API Configuration (Optional)", open=True):
+            gr.Markdown("### 🛡️ Security Note")
+            gr.Markdown("*Your API keys are processed only in-memory for this session. They are never stored, logged, or shared. Our code is [Open Source](https://github.com/mustafabasar7/vidrush).*")
             with gr.Row():
                 gemini_input = gr.Textbox(
                     label="Gemini API Key",

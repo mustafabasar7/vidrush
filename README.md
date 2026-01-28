@@ -1,3 +1,15 @@
+---
+title: VidRush
+emoji: 🎬
+colorFrom: blue
+colorTo: indigo
+sdk: gradio
+sdk_version: 4.44.1
+app_file: app.py
+pinned: false
+license: mit
+---
+
 # 🎬 VidRush AI Video Engine
 
 **An end-to-end autonomous AI video production system** that takes a text prompt, analyzes a video library using computer vision, generates professional voiceover, and produces perfectly synchronized videos.
@@ -13,6 +25,15 @@
 **[Try it on Hugging Face Spaces →](https://huggingface.co/spaces/mustafabasar7/vidrush)**
 
 Enter your own API keys in the UI to enable full AI features, or run in demo mode without keys.
+
+## 🛡️ Security & Privacy
+
+**VidRush respects your privacy.** 
+
+- **In-Memory Only:** When you enter API keys in the UI, they are stored only in the application's RAM for your current session.
+- **No Logging/Storage:** We do not log, store, or transmit your keys to any server other than the official Google/Edge-TTS endpoints.
+- **Open Source:** This application is fully open-source. You can verify how your keys are handled by reviewing `app.py` on GitHub.
+- **Safe Demo:** You can run the app without keys in "Demo Mode" to see the workflow without any risk.
 
 ## ✨ Features
 

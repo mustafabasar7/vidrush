@@ -1,6 +1,6 @@
 ---
 title: VidRusher
-emoji: none
+emoji: 🎥
 colorFrom: blue
 colorTo: indigo
 sdk: gradio

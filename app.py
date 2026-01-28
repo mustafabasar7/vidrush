@@ -448,11 +448,19 @@ def create_demo():
         try:
             working_folder = get_working_folder(stock_path, upload_files, progress=progress)
             
+            # Properly handle API keys - strip whitespace and convert empty to None
+            clean_gemini_key = gemini_key.strip() if gemini_key else None
+            clean_google_key = google_key.strip() if google_key else None
+            
+            print(f"DEBUG: Gemini key provided: {bool(clean_gemini_key)}")
+            print(f"DEBUG: Working folder: {working_folder}")
+            
             engine = VidRusherEngine(
                 stock_folder=working_folder,
-                gemini_key=gemini_key if gemini_key else None,
-                google_tts_key=google_key if google_key else None
+                gemini_key=clean_gemini_key,
+                google_tts_key=clean_google_key
             )
+
             
             scenes, thumbs = await engine.generate_script(prompt, progress)
             

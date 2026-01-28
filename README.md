@@ -13,7 +13,7 @@ license: mit
 
 # VidRusher AI Video Engine
 
-**An end-to-end autonomous AI video production system** that takes a text prompt, analyzes a video library using computer vision, generates professional voiceover, and produces perfectly synchronized videos.
+**Turn Your Ideas into Videos Automatically:** Type what you want to create. Our AI analyzes your footage, chooses the right scenes, adds a narrator's voice, and delivers a fully edited video in seconds.
 
 [![Open in Spaces](https://huggingface.co/datasets/huggingface/badges/resolve/main/open-in-hf-spaces-sm.svg)](https://huggingface.co/spaces/mustafabasar777/vidrusher)
 ![Python](https://img.shields.io/badge/Python-3.10+-blue)

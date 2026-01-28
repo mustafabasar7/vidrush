@@ -390,7 +390,7 @@ def create_demo():
     ) as demo:
         
         gr.Markdown("# VidRusher AI Video Engine", elem_classes="main-title")
-        gr.Markdown("**Autonomous AI video production** - Enter a prompt, and AI selects clips, generates voiceover, and produces synchronized video.")
+        gr.Markdown("**Turn Your Ideas into Videos Automatically:** Type what you want to create. Our AI analyzes your footage, chooses the right scenes, adds a narrator's voice, and delivers a fully edited video in seconds.")
         
         with gr.Accordion("API Configuration (Optional)", open=True):
             gr.Markdown("### Security Note")

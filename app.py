@@ -302,19 +302,22 @@ class VidRusherEngine:
                 v_clip = v_clip.with_audio(a_clip)
                 
                 try:
-                    wrapped_text = self._wrap_text(scene['text'], width=20)
+                    wrapped_text = self._wrap_text(scene['text'], width=25)
                     txt_clip = TextClip(
                         text=wrapped_text,
-                        font_size=24,
+                        fontsize=28,
                         color='white',
-                        bg_color='rgba(0,0,0,0.7)',
-                        text_align="center",
-                        size=(TARGET_W - 20, None)
-                    ).with_duration(target_duration).with_position(('center', TARGET_H - 150))
+                        bg_color='black',
+                        size=(TARGET_W - 20, None),
+                        method='caption',
+                        align='center'
+                    )
+                    txt_clip = txt_clip.set_duration(target_duration).set_position(('center', TARGET_H - 120))
                     
                     v_clip = CompositeVideoClip([v_clip, txt_clip])
                 except Exception as e:
-                    print(f"Subtitle error: {e}")
+                    print(f"Subtitle error (continuing without subtitles): {e}")
+
                 
                 final_clips.append(v_clip)
                 

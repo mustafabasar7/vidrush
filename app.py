@@ -7,6 +7,15 @@ import sys
 import argparse
 import re
 import asyncio
+import platform
+
+# For local folder browsing
+try:
+    import tkinter as tk
+    from tkinter import filedialog
+    HAS_TK = True
+except:
+    HAS_TK = False
 
 from google import genai
 from google.genai import types
@@ -344,6 +353,21 @@ def create_demo():
     # Global engine instance (will be recreated with API keys)
     current_engine = [None]
     
+    def browse_folder():
+        """Opens a local folder picker if running locally."""
+        if os.environ.get('SPACE_ID'):
+            return "Custom path selection is disabled in HF Spaces. Please use the 'Upload Your Videos' tab."
+            
+        if not HAS_TK:
+            return "Folder picker requires 'tkinter' installed locally."
+            
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes('-topmost', True)
+        path = filedialog.askdirectory()
+        root.destroy()
+        return path if path else "."
+
     def initialize_engine(gemini_key, google_key, stock_path):
         """Initialize engine with user-provided API keys and path."""
         current_engine[0] = VidRusherEngine(
@@ -355,7 +379,7 @@ def create_demo():
         return f"Engine initialized! Found {video_count} videos in: {current_engine[0].stock_folder}"
     
     def get_working_folder(stock_path, upload_files):
-        """Helper to determine and prepare the active video folder."""
+        """Helper to determine and prepare the active video folder. Enforces mandatory selection."""
         if upload_files:
             if len(upload_files) > 10:
                 raise ValueError("Too many videos! Maximum limit is 10 videos.")
@@ -368,7 +392,14 @@ def create_demo():
             for f_obj in upload_files:
                 shutil.copy(f_obj.name, os.path.join(upload_dir, os.path.basename(f_obj.name)))
             return upload_dir
-        return stock_path if stock_path else "."
+            
+        if stock_path and os.path.isdir(stock_path):
+            # Check if there are actually mp4s there
+            vids = [f for f in os.listdir(stock_path) if f.endswith(".mp4")]
+            if vids:
+                return stock_path
+        
+        raise ValueError("No videos found! Please upload MP4 clips or select a valid folder.")
 
     def process_video(prompt, gemini_key, google_key, stock_path, upload_files, progress=gr.Progress()):
         """Main video generation function."""
@@ -443,28 +474,42 @@ def create_demo():
         gr.Markdown("# VidRusher AI Video Engine", elem_classes="main-title")
         gr.Markdown("**Turn Your Ideas into Videos Automatically:** Type what you want to create. Our AI analyzes your footage, chooses the right scenes, adds a narrator's voice, and delivers a fully edited video in seconds.")
         
-        with gr.Accordion("API Configuration (Optional)", open=True):
-            gr.Markdown("### Security Note")
-            gr.Markdown("*Your API keys are processed only in-memory for this session. They are never stored, logged, or shared. Our code is [Open Source](https://github.com/mustafabasar7/vidrusher).*")
+        with gr.Accordion("1. Project Setup (Mandatory)", open=True):
             with gr.Row():
                 gemini_input = gr.Textbox(
                     label="Gemini API Key",
-                    placeholder="Get from: aistudio.google.com",
-                    type="password"
+                    placeholder="Enter your Gemini API Key",
+                    type="password",
+                    scale=2
                 )
                 google_tts_input = gr.Textbox(
-                    label="Google Cloud TTS Key (Optional)",
-                    placeholder="Falls back to Edge-TTS if empty",
-                    type="password"
+                    label="Google TTS Key (Optional)",
+                    placeholder="Enter Google TTS API Key",
+                    type="password",
+                    scale=2
                 )
-                stock_path_input = gr.Textbox(
-                    label="Video Library Path",
-                    placeholder="Path to folder containing .mp4 files (Default: .)",
-                    value="."
+            
+            gr.Markdown("### Upload Your Videos")
+            with gr.Row():
+                video_upload = gr.File(
+                    label="Drag & Drop or Click to Upload MP4 Clips (Max 10)",
+                    file_count="multiple",
+                    file_types=[".mp4"],
+                    scale=3
                 )
-            status_output = gr.Textbox(label="Status", interactive=False)
-            init_btn = gr.Button("Initialize Engine", variant="secondary")
+                with gr.Column(visible=not os.environ.get('SPACE_ID'), scale=2):
+                    stock_path_input = gr.Textbox(
+                        label="OR Local Folder Path",
+                        value=".",
+                        placeholder="e.g. C:/Videos"
+                    )
+                    browse_btn = gr.Button("📁 Browse Local Folder")
+                
+            status_output = gr.Textbox(label="Engine Status", interactive=False)
+            init_btn = gr.Button("Initialize & Verify Setup", variant="primary")
+            
             init_btn.click(initialize_engine, inputs=[gemini_input, google_tts_input, stock_path_input], outputs=[status_output])
+            browse_btn.click(browse_folder, outputs=[stock_path_input])
         
         with gr.Row():
             with gr.Column(scale=1):
@@ -477,16 +522,8 @@ def create_demo():
                     index_btn = gr.Button("Scan Library", variant="secondary")
                     generate_btn = gr.Button("Generate Video", variant="primary")
                 
-                gr.Markdown("### Video Library (Keyframes)")
+                gr.Markdown("### Analysis Gallery")
                 gallery = gr.Gallery(label="Analyzed Frames", columns=3, height="auto")
-                
-                with gr.Tab("Upload Your Videos"):
-                    video_upload = gr.File(
-                        label="Upload mp4 clips (Max 10)",
-                        file_count="multiple",
-                        file_types=[".mp4"]
-                    )
-                    gr.Markdown("*Limit: 10 videos. If uploaded, these take priority.*")
                 
                 index_btn.click(index_videos, inputs=[gemini_input, stock_path_input, video_upload], outputs=[gallery])
 

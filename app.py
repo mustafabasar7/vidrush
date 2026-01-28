@@ -23,7 +23,7 @@ from moviepy.video.fx import Loop
 # Load environment variables from .env (fallback)
 load_dotenv()
 
-class VidrushEngine:
+class VidRusherEngine:
     def __init__(self, stock_folder=".", gemini_key=None, google_tts_key=None):
         self.stock_folder = stock_folder
         self.assets_dir = os.path.join(stock_folder, "assets")
@@ -209,7 +209,7 @@ class VidrushEngine:
     def get_stock_videos(self):
         """Lists available mp4 files."""
         return [f for f in os.listdir(self.stock_folder) 
-                if f.endswith(".mp4") and not f.startswith("vidrush_")]
+                if f.endswith(".mp4") and not f.startswith("vidrusher_")]
 
     def _get_proxy_video(self, filename, progress=None):
         """Creates low-res proxy for fast rendering."""
@@ -294,7 +294,7 @@ class VidrushEngine:
         print("🎬 Rendering final video...")
         final_video = concatenate_videoclips(final_clips, method="compose")
         
-        output_name = os.path.join(self.temp_dir, "vidrush_output.mp4")
+        output_name = os.path.join(self.temp_dir, "vidrusher_output.mp4")
         final_video.write_videofile(
             output_name, 
             fps=24, 
@@ -324,7 +324,7 @@ def create_demo():
     
     def initialize_engine(gemini_key, google_key):
         """Initialize engine with user-provided API keys."""
-        current_engine[0] = VidrushEngine(
+        current_engine[0] = VidRusherEngine(
             stock_folder=".",
             gemini_key=gemini_key if gemini_key else None,
             google_tts_key=google_key if google_key else None
@@ -338,7 +338,7 @@ def create_demo():
             return None, "❌ Please enter a prompt!", []
         
         # Initialize/update engine with keys
-        engine = VidrushEngine(
+        engine = VidRusherEngine(
             stock_folder=".",
             gemini_key=gemini_key if gemini_key else None,
             google_tts_key=google_key if google_key else None
@@ -370,7 +370,7 @@ def create_demo():
     
     def index_videos(gemini_key, progress=gr.Progress()):
         """Index video library and show keyframes."""
-        engine = VidrushEngine(stock_folder=".", gemini_key=gemini_key)
+        engine = VidRusherEngine(stock_folder=".", gemini_key=gemini_key)
         
         async def async_index():
             engine._update_progress(progress, 0.1, "Scanning library...")
@@ -381,7 +381,7 @@ def create_demo():
 
     # Build Gradio Interface
     with gr.Blocks(
-        title="VidRush AI Video Engine",
+        title="VidRusher AI Video Engine",
         theme=gr.themes.Soft(),
         css="""
         .api-box { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 10px; padding: 20px; }
@@ -389,12 +389,12 @@ def create_demo():
         """
     ) as demo:
         
-        gr.Markdown("# 🎬 VidRush AI Video Engine", elem_classes="main-title")
+        gr.Markdown("# 🎬 VidRusher AI Video Engine", elem_classes="main-title")
         gr.Markdown("**Autonomous AI video production** - Enter a prompt, and AI selects clips, generates voiceover, and produces synchronized video.")
         
         with gr.Accordion("🔑 API Configuration (Optional)", open=True):
             gr.Markdown("### 🛡️ Security Note")
-            gr.Markdown("*Your API keys are processed only in-memory for this session. They are never stored, logged, or shared. Our code is [Open Source](https://github.com/mustafabasar7/vidrush).*")
+            gr.Markdown("*Your API keys are processed only in-memory for this session. They are never stored, logged, or shared. Our code is [Open Source](https://github.com/mustafabasar7/vidrusher).*")
             with gr.Row():
                 gemini_input = gr.Textbox(
                     label="Gemini API Key",

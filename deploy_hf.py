@@ -3,7 +3,7 @@ import os
 
 api = HfApi()
 user = api.whoami()["name"]
-repo_id = f"{user}/vidrush"
+repo_id = f"{user}/vidrusher"
 
 print(f"Targeting Space: {repo_id}")
 
@@ -30,8 +30,8 @@ for file in files_to_upload:
         )
 
 # Upload sample videos to make it usable out of the box
-# I'll upload all .mp4 files in the root that aren't "vidrush_" outputs
-videos = [f for f in os.listdir(".") if f.endswith(".mp4") and not f.startswith("vidrush_")]
+# I'll upload all .mp4 files in the root that aren't "vidrusher_" outputs
+videos = [f for f in os.listdir(".") if f.endswith(".mp4") and not f.startswith("vidrusher_")]
 # Limit to a few small ones if they are too heavy, but let's try to upload them
 for v in videos:
     print(f"Uploading video: {v}...")

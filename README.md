@@ -15,7 +15,7 @@ license: mit
 
 **An end-to-end autonomous AI video production system** that takes a text prompt, analyzes a video library using computer vision, generates professional voiceover, and produces perfectly synchronized videos.
 
-[![Open in Spaces](https://huggingface.co/datasets/huggingface/badges/resolve/main/open-in-hf-spaces-sm.svg)](https://huggingface.co/spaces/mustafabasar7/vidrush)
+[![Open in Spaces](https://huggingface.co/datasets/huggingface/badges/resolve/main/open-in-hf-spaces-sm.svg)](https://huggingface.co/spaces/mustafabasar7/vidrusher)
 ![Python](https://img.shields.io/badge/Python-3.10+-blue)
 ![Gemini](https://img.shields.io/badge/AI-Gemini%202.0%20Flash-orange)
 ![MoviePy](https://img.shields.io/badge/Video-MoviePy%20v2-green)
@@ -23,7 +23,7 @@ license: mit
 
 ## 🚀 Live Demo
 
-**[Try it on Hugging Face Spaces →](https://huggingface.co/spaces/mustafabasar7/vidrush)**
+**[Try it on Hugging Face Spaces →](https://huggingface.co/spaces/mustafabasar7/vidrusher)**
 
 Enter your own API keys in the UI to enable full AI features, or run in demo mode without keys.
 
@@ -33,7 +33,7 @@ Enter your own API keys in the UI to enable full AI features, or run in demo mod
 
 - **In-Memory Only:** When you enter API keys in the UI, they are stored only in the application's RAM for your current session.
 - **No Logging/Storage:** We do not log, store, or transmit your keys to any server other than the official Google/Edge-TTS endpoints.
-- **Open Source:** This application is fully open-source. You can verify how your keys are handled by reviewing `app.py` on GitHub.
+- **Open Source**: This application is fully open-source. You can verify how your keys are handled by reviewing `app.py` on GitHub.
 - **Safe Demo:** You can run the app without keys in "Demo Mode" to see the workflow without any risk.
 
 ## ✨ Features

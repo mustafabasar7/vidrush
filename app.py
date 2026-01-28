@@ -396,20 +396,22 @@ def create_demo():
                 raise ValueError("Too many videos! Maximum limit is 10 videos.")
                 
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            import shutil
+            upload_dir = os.path.join(".", "temp", f"upload_{timestamp}")
+            
+            # Skip re-copying if folder with enough files already exists
             if os.path.exists(upload_dir) and len(os.listdir(upload_dir)) >= total_files:
-                return upload_dir # Skip re-copying if already done
+                return upload_dir
                 
             os.makedirs(upload_dir, exist_ok=True)
             for i, f_obj in enumerate(upload_files):
                 filename = os.path.basename(f_obj.name)
                 if progress is not None:
-                    # Map 0.0-0.2 range to file preparation
                     prog_val = (i + 1) / total_files * 0.2
                     progress(prog_val, desc=f"Preparing video {i+1}/{total_files}: {filename}")
                 
                 shutil.copy(f_obj.name, os.path.join(upload_dir, filename))
             return upload_dir
+
             
         # 2. Check Local Path
         # On HF Spaces, we ignore the default '.' to force users to upload their own videos

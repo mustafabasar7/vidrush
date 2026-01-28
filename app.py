@@ -8,7 +8,8 @@ import argparse
 import re
 import asyncio
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from dotenv import load_dotenv
 import edge_tts
 import requests
@@ -39,9 +40,10 @@ class VidrushEngine:
         self.gemini_api_key = gemini_key or os.getenv("GEMINI_API_KEY", "")
         self.google_api_key = google_tts_key or os.getenv("GOOGLE_API_KEY", "")
         
+        self.genai_client = None
         if self.gemini_api_key:
-            genai.configure(api_key=self.gemini_api_key)
-            print("✅ Gemini API configured")
+            self.genai_client = genai.Client(api_key=self.gemini_api_key)
+            print("✅ Gemini API Client configured")
         
         if self.google_api_key:
             print("✅ Google Cloud TTS configured")
@@ -121,11 +123,9 @@ class VidrushEngine:
 
     async def generate_script(self, prompt, progress=None):
         """Uses Gemini Vision to analyze and script."""
-        if not self.gemini_api_key:
+        if not self.genai_client:
             return [{"text": f"Demo: {prompt}", "video_file": self.get_stock_videos()[0] if self.get_stock_videos() else None, "reasoning": "No API key - using first video"}], []
             
-        model = genai.GenerativeModel('gemini-2.0-flash')
-        
         self._update_progress(progress, 0.1, "Scanning video library...")
         video_indexes = await self._extract_keyframes(progress)
         
@@ -133,18 +133,27 @@ class VidrushEngine:
             return [], []
 
         self._update_progress(progress, 0.3, "AI analyzing content...")
-        parts = [f"You are a professional video editor. Analyze these video frames and create a script for: '{prompt}'"]
+        
+        contents = [f"You are a professional video editor. Analyze these video frames and create a script for: '{prompt}'"]
         for idx, item in enumerate(video_indexes):
-            parts.append(f"CLIP {idx} (File: {item['filename']}):")
-            parts.append(item['image'])
+            contents.append(f"CLIP {idx} (File: {item['filename']}):")
+            # Convert PIL image to bytes for google-genai
+            import io
+            img_byte_arr = io.BytesIO()
+            item['image'].save(img_byte_arr, format='JPEG')
+            img_bytes = img_byte_arr.getvalue()
+            contents.append(types.Part.from_bytes(data=img_bytes, mime_type="image/jpeg"))
             
-        parts.append("""
+        contents.append("""
         Create a video script. Use exact 'video_file' names. Add 'reasoning' for each selection.
-        Return ONLY JSON array: [{"text": "...", "video_file": "...", "reasoning": "..."}]
+        Return ONLY a JSON array of objects with exactly these keys: "text", "video_file", "reasoning".
         """)
         
         try:
-            response = model.generate_content(parts)
+            response = self.genai_client.models.generate_content(
+                model='gemini-2.0-flash',
+                contents=contents
+            )
             text = response.text
             json_match = re.search(r'\[.*\]', text, re.DOTALL)
             if json_match:
@@ -159,7 +168,7 @@ class VidrushEngine:
             print(f"AI Error: {e}")
             fallback = [{"text": f"Generated content for: {prompt}", 
                          "video_file": video_indexes[0]['filename'], 
-                         "reasoning": "AI response parsing failed, using first video."}]
+                         "reasoning": "AI response parsing failed or API error, using first video."}]
             return fallback, [item['path'] for item in video_indexes]
 
     async def generate_audio(self, scenes):

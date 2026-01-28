@@ -7,4 +7,5 @@ edge_tts>=6.1.0
 python-dotenv>=1.0.0
 pillow>=10.0.0
 requests>=2.31.0
+pydantic==2.10.6
 audioop-lts; python_version >= '3.13'

@@ -322,24 +322,24 @@ def create_demo():
     # Global engine instance (will be recreated with API keys)
     current_engine = [None]
     
-    def initialize_engine(gemini_key, google_key):
-        """Initialize engine with user-provided API keys."""
+    def initialize_engine(gemini_key, google_key, stock_path):
+        """Initialize engine with user-provided API keys and path."""
         current_engine[0] = VidRusherEngine(
-            stock_folder=".",
+            stock_folder=stock_path if stock_path else ".",
             gemini_key=gemini_key if gemini_key else None,
             google_tts_key=google_key if google_key else None
         )
         video_count = len(current_engine[0].get_stock_videos())
-        return f"Engine initialized! Found {video_count} videos in library."
+        return f"Engine initialized! Found {video_count} videos in: {current_engine[0].stock_folder}"
     
-    def process_video(prompt, gemini_key, google_key, progress=gr.Progress()):
+    def process_video(prompt, gemini_key, google_key, stock_path, progress=gr.Progress()):
         """Main video generation function."""
         if not prompt:
             return None, "Please enter a prompt!", []
         
-        # Initialize/update engine with keys
+        # Initialize/update engine with keys and path
         engine = VidRusherEngine(
-            stock_folder=".",
+            stock_folder=stock_path if stock_path else ".",
             gemini_key=gemini_key if gemini_key else None,
             google_tts_key=google_key if google_key else None
         )
@@ -368,9 +368,9 @@ def create_demo():
         
         return asyncio.run(async_run())
     
-    def index_videos(gemini_key, progress=gr.Progress()):
+    def index_videos(gemini_key, stock_path, progress=gr.Progress()):
         """Index video library and show keyframes."""
-        engine = VidRusherEngine(stock_folder=".", gemini_key=gemini_key)
+        engine = VidRusherEngine(stock_folder=stock_path if stock_path else ".", gemini_key=gemini_key)
         
         async def async_index():
             engine._update_progress(progress, 0.1, "Scanning library...")
@@ -406,9 +406,14 @@ def create_demo():
                     placeholder="Falls back to Edge-TTS if empty",
                     type="password"
                 )
+                stock_path_input = gr.Textbox(
+                    label="Video Library Path",
+                    placeholder="Path to folder containing .mp4 files (Default: .)",
+                    value="."
+                )
             status_output = gr.Textbox(label="Status", interactive=False)
             init_btn = gr.Button("Initialize Engine", variant="secondary")
-            init_btn.click(initialize_engine, inputs=[gemini_input, google_tts_input], outputs=[status_output])
+            init_btn.click(initialize_engine, inputs=[gemini_input, google_tts_input, stock_path_input], outputs=[status_output])
         
         with gr.Row():
             with gr.Column(scale=1):
@@ -424,7 +429,7 @@ def create_demo():
                 gr.Markdown("### Video Library (Keyframes)")
                 gallery = gr.Gallery(label="Analyzed Frames", columns=3, height="auto")
                 
-                index_btn.click(index_videos, inputs=[gemini_input], outputs=[gallery])
+                index_btn.click(index_videos, inputs=[gemini_input, stock_path_input], outputs=[gallery])
 
             with gr.Column(scale=1):
                 video_output = gr.Video(label="Generated Video")
@@ -432,7 +437,7 @@ def create_demo():
         
         generate_btn.click(
             process_video, 
-            inputs=[prompt_input, gemini_input, google_tts_input], 
+            inputs=[prompt_input, gemini_input, google_tts_input, stock_path_input], 
             outputs=[video_output, reasoning_output, gallery]
         )
         

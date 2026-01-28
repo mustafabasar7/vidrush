@@ -369,18 +369,25 @@ def create_demo():
         root.destroy()
         return path if path else "."
 
-    def initialize_engine(gemini_key, google_key, stock_path):
-        """Initialize engine with user-provided API keys and path."""
-        current_engine[0] = VidRusherEngine(
-            stock_folder=stock_path if stock_path else ".",
-            gemini_key=gemini_key if gemini_key else None,
-            google_tts_key=google_key if google_key else None
-        )
-        video_count = len(current_engine[0].get_stock_videos())
-        return f"Engine initialized! Found {video_count} videos in: {current_engine[0].stock_folder}"
+    def initialize_engine(gemini_key, google_key, stock_path, upload_files):
+        """Initialize engine and report correct video source."""
+        try:
+            working_folder = get_working_folder(stock_path, upload_files)
+            source_type = "uploaded files" if upload_files else f"library at '{working_folder}'"
+            
+            current_engine[0] = VidRusherEngine(
+                stock_folder=working_folder,
+                gemini_key=gemini_key if gemini_key else None,
+                google_tts_key=google_key if google_key else None
+            )
+            video_count = len(current_engine[0].get_stock_videos())
+            return f"✅ Engine initialized! Found {video_count} videos in {source_type}."
+        except Exception as e:
+            return f"❌ Setup error: {str(e)}"
     
     def get_working_folder(stock_path, upload_files, progress=None):
         """Helper to determine and prepare the active video folder with progress tracking."""
+        # 1. Prioritize Uploaded Files
         if upload_files:
             total_files = len(upload_files)
             if total_files > 10:
@@ -394,19 +401,26 @@ def create_demo():
             for i, f_obj in enumerate(upload_files):
                 filename = os.path.basename(f_obj.name)
                 if progress:
-                    # Map 0.0-0.2 range to file preparation
                     prog_val = (i + 1) / total_files * 0.2
                     progress(prog_val, desc=f"Preparing video {i+1}/{total_files}: {filename}")
                 
                 shutil.copy(f_obj.name, os.path.join(upload_dir, filename))
             return upload_dir
             
-        if stock_path and os.path.isdir(stock_path):
-            vids = [f for f in os.listdir(stock_path) if f.endswith(".mp4")]
-            if vids:
-                return stock_path
+        # 2. Check Local Path
+        # On HF Spaces, we ignore the default '.' to force users to upload their own videos
+        is_hf = os.environ.get('SPACE_ID') is not None
+        effective_path = stock_path if stock_path else "."
         
-        raise ValueError("No videos found! Please upload MP4 clips or select a valid folder.")
+        if is_hf and effective_path == ".":
+            raise ValueError("No videos provided. Please upload your MP4 clips to start.")
+            
+        if effective_path and os.path.isdir(effective_path):
+            vids = [f for f in os.listdir(effective_path) if f.endswith(".mp4")]
+            if vids:
+                return effective_path
+        
+        raise ValueError("No MP4 videos found! Please upload clips or select a valid folder.")
 
     def process_video(prompt, gemini_key, google_key, stock_path, upload_files, progress=gr.Progress()):
         """Main video generation function."""
@@ -515,7 +529,7 @@ def create_demo():
             status_output = gr.Textbox(label="Engine Status", interactive=False)
             init_btn = gr.Button("Initialize & Verify Setup", variant="primary")
             
-            init_btn.click(initialize_engine, inputs=[gemini_input, google_tts_input, stock_path_input], outputs=[status_output])
+            init_btn.click(initialize_engine, inputs=[gemini_input, google_tts_input, stock_path_input, video_upload], outputs=[status_output])
             browse_btn.click(browse_folder, outputs=[stock_path_input])
         
         with gr.Row():
